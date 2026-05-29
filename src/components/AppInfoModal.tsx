@@ -12,6 +12,7 @@ import {
   View,
 } from 'react-native';
 import { colors, radii, shadows, spacing } from '../theme';
+import { seedDemoIntoLatestSession } from '../utils/seed';
 import { wipeAllUserData } from '../utils/wipe';
 
 interface Props {
@@ -27,6 +28,7 @@ const SUPPORT_EMAIL = 'kyorochan.fate@gmail.com';
 
 export default function AppInfoModal({ visible, onClose, onDataWiped }: Props) {
   const [wiping, setWiping] = useState(false);
+  const [seeding, setSeeding] = useState(false);
 
   const appName = (Constants.expoConfig?.name as string) ?? 'カイゼンスコープ';
   const version = (Constants.expoConfig?.version as string) ?? '1.0.0';
@@ -63,6 +65,57 @@ export default function AppInfoModal({ visible, onClose, onDataWiped }: Props) {
           text: '削除する',
           style: 'destructive',
           onPress: () => confirmWipe(),
+        },
+      ]
+    );
+  };
+
+  const onSeed = () => {
+    Alert.alert(
+      '🌱 サンプルデータを投入',
+      [
+        'これは Play Store 用スクリーンショット撮影のための機能です。',
+        '',
+        '事前準備:',
+        '・任意の動画でセッションを 1 つ作成しておく',
+        '・そのセッションには要素作業を 1 件も記録しない',
+        '',
+        '投入される内容:',
+        '・リソース 3 件 (作業者A/B + プレスA)',
+        '・要素作業 15 件 (現実的な作業名)',
+        '・改善効果の試算条件 (¥2,500/h, 800台/日, 250日/年)',
+        '・タクトタイム 60 秒',
+        '',
+        '空のセッションが見つからない場合はエラーになります。',
+      ].join('\n'),
+      [
+        { text: 'キャンセル', style: 'cancel' },
+        {
+          text: '投入する',
+          onPress: async () => {
+            setSeeding(true);
+            try {
+              const result = await seedDemoIntoLatestSession();
+              Alert.alert(
+                '✅ 投入完了',
+                [
+                  `セッション「${result.sessionName}」にデモデータを投入しました。`,
+                  '',
+                  `・リソース: 新規 ${result.resourcesCreated} 件`,
+                  `・要素作業: ${result.tasksCreated} 件`,
+                  `・試算条件: 設定済み`,
+                  '',
+                  '画面を閉じて、改善タブや分析タブで撮影してください。',
+                ].join('\n')
+              );
+              onDataWiped?.(); // セッション一覧の更新トリガにも使う
+              onClose();
+            } catch (e: any) {
+              Alert.alert('エラー', String(e?.message ?? e));
+            } finally {
+              setSeeding(false);
+            }
+          },
         },
       ]
     );
@@ -121,6 +174,23 @@ export default function AppInfoModal({ visible, onClose, onDataWiped }: Props) {
                 onPress={openMail}
                 hint={SUPPORT_EMAIL}
               />
+            </Section>
+
+            <Section heading="📸 ストア撮影用 (開発者向け)">
+              <Text style={styles.dangerHint}>
+                スクリーンショット用に、空のセッションへリアルなサンプル要素作業を一括投入します。
+                {'\n'}事前に動画 1 本でセッションを作っておいてください。
+              </Text>
+              <TouchableOpacity
+                style={styles.seedBtn}
+                onPress={onSeed}
+                disabled={seeding}
+                activeOpacity={0.85}
+              >
+                <Text style={styles.seedBtnText}>
+                  {seeding ? '投入中...' : '🌱 デモデータを投入'}
+                </Text>
+              </TouchableOpacity>
             </Section>
 
             <Section heading="🗑 データ管理">
@@ -285,6 +355,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   dangerBtnText: {
+    color: '#fff',
+    fontWeight: '800',
+    fontSize: 14,
+    letterSpacing: 0.3,
+  },
+  seedBtn: {
+    backgroundColor: colors.success600,
+    margin: 12,
+    paddingVertical: 14,
+    borderRadius: radii.md,
+    alignItems: 'center',
+  },
+  seedBtnText: {
     color: '#fff',
     fontWeight: '800',
     fontSize: 14,
