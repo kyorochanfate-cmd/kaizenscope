@@ -21,8 +21,8 @@ interface Props {
   onDataWiped?: () => void;
 }
 
-// TODO: 公開時にここを実際の URL に差し替える (例: GitHub Pages, Notion)
-const PRIVACY_POLICY_URL = 'https://example.com/kaizenscope/privacy';
+const PRIVACY_POLICY_URL =
+  'https://kyorochanfate-cmd.github.io/kaizenscope/privacy.html';
 const SUPPORT_EMAIL = 'kyorochan.fate@gmail.com';
 
 export default function AppInfoModal({ visible, onClose, onDataWiped }: Props) {
