@@ -1,0 +1,10 @@
+# EAS Build 時にアップロードしないファイル
+node_modules
+.expo
+.git
+expo.log
+expo.err.log
+sample-report*.xlsx
+scripts/
+PRIVACY.md
+.idea/

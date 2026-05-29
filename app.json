@@ -1,0 +1,62 @@
+{
+  "expo": {
+    "name": "カイゼンスコープ",
+    "slug": "genba-ie-checker",
+    "version": "1.0.0",
+    "orientation": "default",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.kaizenscope.app",
+      "infoPlist": {
+        "NSCameraUsageDescription": "作業動画の撮影に使用します",
+        "NSMicrophoneUsageDescription": "作業動画の録音に使用します",
+        "NSPhotoLibraryUsageDescription": "保存済みの作業動画を読み込むために使用します",
+        "NSPhotoLibraryAddUsageDescription": "撮影した動画を保存するために使用します"
+      }
+    },
+    "android": {
+      "package": "com.kaizenscope.app",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "edgeToEdgeEnabled": true,
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.READ_MEDIA_VIDEO",
+        "android.permission.READ_MEDIA_IMAGES"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-video",
+      "expo-sqlite",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "保存済みの作業動画を読み込むためにアクセスを許可してください",
+          "cameraPermission": "作業動画の撮影のためにカメラへのアクセスを許可してください",
+          "microphonePermission": "作業動画の録音のためにマイクへのアクセスを許可してください"
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "da051428-26b6-46e4-9244-6cfec5491982"
+      }
+    },
+    "owner": "takochan.gadget"
+  }
+}

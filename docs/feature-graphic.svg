@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 500" width="1024" height="500">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1e1b4b"/>
+      <stop offset="0.5" stop-color="#3730a3"/>
+      <stop offset="1" stop-color="#4338ca"/>
+    </linearGradient>
+    <linearGradient id="amber" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fbbf24"/>
+      <stop offset="1" stop-color="#f59e0b"/>
+    </linearGradient>
+    <linearGradient id="emerald" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#10b981"/>
+      <stop offset="1" stop-color="#047857"/>
+    </linearGradient>
+    <linearGradient id="red" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f87171"/>
+      <stop offset="1" stop-color="#dc2626"/>
+    </linearGradient>
+    <linearGradient id="blue" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#60a5fa"/>
+      <stop offset="1" stop-color="#1d4ed8"/>
+    </linearGradient>
+    <filter id="softShadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="10" result="blur"/>
+      <feOffset dy="6" result="offsetBlur"/>
+      <feComponentTransfer><feFuncA type="linear" slope="0.3"/></feComponentTransfer>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- 背景 -->
+  <rect width="1024" height="500" fill="url(#bg)"/>
+
+  <!-- 装飾の輪 -->
+  <circle cx="900" cy="80" r="180" fill="#ffffff" opacity="0.05"/>
+  <circle cx="-30" cy="450" r="200" fill="#ffffff" opacity="0.04"/>
+
+  <!-- 左側: テキスト -->
+  <g transform="translate(60, 100)">
+    <text x="0" y="0" font-family="-apple-system, sans-serif" font-size="16" font-weight="700" fill="#c7d2fe" letter-spacing="4">KAIZEN SCOPE</text>
+
+    <text x="0" y="78" font-family="-apple-system, sans-serif" font-size="64" font-weight="900" fill="#ffffff" letter-spacing="-2">カイゼンスコープ</text>
+
+    <text x="0" y="138" font-family="-apple-system, sans-serif" font-size="22" font-weight="700" fill="#fbbf24" letter-spacing="0">動画で見つける、現場のムダ。</text>
+
+    <!-- バッジ群 -->
+    <g transform="translate(0, 180)">
+      <rect x="0" y="0" width="170" height="36" rx="18" fill="#ffffff" opacity="0.15"/>
+      <text x="14" y="24" font-family="-apple-system, sans-serif" font-size="13" font-weight="800" fill="#ffffff">📹 動画から分析</text>
+
+      <rect x="184" y="0" width="170" height="36" rx="18" fill="#ffffff" opacity="0.15"/>
+      <text x="198" y="24" font-family="-apple-system, sans-serif" font-size="13" font-weight="800" fill="#ffffff">📊 TPS/IE 準拠</text>
+
+      <rect x="0" y="52" width="170" height="36" rx="18" fill="#ffffff" opacity="0.15"/>
+      <text x="14" y="76" font-family="-apple-system, sans-serif" font-size="13" font-weight="800" fill="#ffffff">💡 改善案を提案</text>
+
+      <rect x="184" y="52" width="190" height="36" rx="18" fill="#ffffff" opacity="0.15"/>
+      <text x="198" y="76" font-family="-apple-system, sans-serif" font-size="13" font-weight="800" fill="#ffffff">📤 Excel/PDF 出力</text>
+    </g>
+  </g>
+
+  <!-- 右側: モックの "ガントチャート" 風グラフィック -->
+  <g transform="translate(610, 100)" filter="url(#softShadow)">
+    <!-- カード本体 -->
+    <rect x="0" y="0" width="370" height="300" rx="20" fill="#ffffff"/>
+
+    <!-- カード内ヘッダ -->
+    <rect x="0" y="0" width="370" height="56" rx="20" fill="#1e1b4b"/>
+    <rect x="0" y="36" width="370" height="20" fill="#1e1b4b"/>
+    <text x="20" y="35" font-family="-apple-system, sans-serif" font-size="13" font-weight="900" fill="#ffffff" letter-spacing="0.5">ガントチャート</text>
+    <circle cx="335" cy="28" r="5" fill="#10b981"/>
+
+    <!-- 時間軸目盛り -->
+    <line x1="20" y1="70" x2="350" y2="70" stroke="#e2e8f0" stroke-width="1"/>
+    <text x="20" y="86" font-family="-apple-system, sans-serif" font-size="9" fill="#94a3b8">0s</text>
+    <text x="100" y="86" font-family="-apple-system, sans-serif" font-size="9" fill="#94a3b8">15s</text>
+    <text x="180" y="86" font-family="-apple-system, sans-serif" font-size="9" fill="#94a3b8">30s</text>
+    <text x="260" y="86" font-family="-apple-system, sans-serif" font-size="9" fill="#94a3b8">45s</text>
+    <text x="335" y="86" font-family="-apple-system, sans-serif" font-size="9" fill="#dc2626" font-weight="700">T/T</text>
+
+    <!-- タクト線 -->
+    <line x1="335" y1="70" x2="335" y2="260" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="3,3"/>
+
+    <!-- 行1: 作業者A -->
+    <text x="20" y="118" font-family="-apple-system, sans-serif" font-size="11" font-weight="800" fill="#0f172a">👷 作業者A</text>
+    <rect x="20" y="125" width="80" height="22" rx="3" fill="url(#emerald)"/>
+    <rect x="102" y="125" width="40" height="22" rx="3" fill="url(#blue)"/>
+    <rect x="144" y="125" width="30" height="22" rx="3" fill="url(#red)"/>
+    <rect x="176" y="125" width="80" height="22" rx="3" fill="url(#emerald)"/>
+
+    <!-- 行2: 作業者B -->
+    <text x="20" y="170" font-family="-apple-system, sans-serif" font-size="11" font-weight="800" fill="#0f172a">👷 作業者B</text>
+    <rect x="20" y="177" width="60" height="22" rx="3" fill="url(#emerald)"/>
+    <rect x="82" y="177" width="100" height="22" rx="3" fill="url(#red)"/>
+    <rect x="184" y="177" width="50" height="22" rx="3" fill="url(#blue)"/>
+    <rect x="236" y="177" width="80" height="22" rx="3" fill="url(#emerald)"/>
+
+    <!-- 行3: 機械 -->
+    <text x="20" y="222" font-family="-apple-system, sans-serif" font-size="11" font-weight="800" fill="#0f172a">⚙️ プレスA</text>
+    <rect x="20" y="229" width="180" height="22" rx="3" fill="url(#emerald)"/>
+    <rect x="202" y="229" width="60" height="22" rx="3" fill="url(#red)"/>
+    <rect x="264" y="229" width="60" height="22" rx="3" fill="url(#emerald)"/>
+
+    <!-- 凡例 -->
+    <g transform="translate(20, 270)">
+      <rect x="0" y="0" width="10" height="10" rx="2" fill="url(#emerald)"/>
+      <text x="14" y="9" font-family="-apple-system, sans-serif" font-size="9" font-weight="700" fill="#0f172a">正味</text>
+      <rect x="55" y="0" width="10" height="10" rx="2" fill="url(#blue)"/>
+      <text x="69" y="9" font-family="-apple-system, sans-serif" font-size="9" font-weight="700" fill="#0f172a">付帯</text>
+      <rect x="110" y="0" width="10" height="10" rx="2" fill="url(#red)"/>
+      <text x="124" y="9" font-family="-apple-system, sans-serif" font-size="9" font-weight="700" fill="#0f172a">ムダ</text>
+    </g>
+  </g>
+
+  <!-- 右下: アンバーアクセント "INFREE / 広告で完全無料" -->
+  <g transform="translate(540, 410)">
+    <rect x="0" y="0" width="170" height="36" rx="18" fill="url(#amber)"/>
+    <text x="85" y="24" font-family="-apple-system, sans-serif" font-size="13" font-weight="900" fill="#1e1b4b" text-anchor="middle">✨ 完全無料</text>
+  </g>
+</svg>
