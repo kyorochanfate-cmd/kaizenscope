@@ -48,13 +48,25 @@ try {
   // Expo Go - 動かない
 }
 
+/**
+ * テスト広告を使うべきか。
+ *  - __DEV__ (Expo Go / development ビルド) は当然テスト
+ *  - EXPO_PUBLIC_USE_TEST_ADS=1 (eas.json の preview プロファイルで設定) もテスト
+ *
+ * これにより preview ビルドでは本番 ID を使わず、必ず TestAd ラベル付きの
+ * テスト広告だけが表示される → 自己クリックによる AdMob BAN を防止。
+ * production プロファイルだけこのフラグを立てないので本物の広告が出る。
+ */
+const USE_TEST_ADS =
+  __DEV__ || process.env.EXPO_PUBLIC_USE_TEST_ADS === '1';
+
 function interstitialUnitId(): string {
-  if (__DEV__ || !TestIdsConst) return TestIdsConst?.INTERSTITIAL ?? '';
+  if (USE_TEST_ADS || !TestIdsConst) return TestIdsConst?.INTERSTITIAL ?? '';
   return Platform.OS === 'android' ? ANDROID_INTERSTITIAL_UNIT_ID : '';
 }
 
 function rewardedUnitId(): string {
-  if (__DEV__ || !TestIdsConst) return TestIdsConst?.REWARDED ?? '';
+  if (USE_TEST_ADS || !TestIdsConst) return TestIdsConst?.REWARDED ?? '';
   return Platform.OS === 'android' ? ANDROID_REWARDED_UNIT_ID : '';
 }
 
@@ -63,6 +75,15 @@ let initialized = false;
 export async function initAds(): Promise<void> {
   if (initialized || !SDK) return;
   try {
+    // テスト広告モードのときは、実機を強制的にテストデバイス扱いにする。
+    // (本番 ID を使う production でも、登録した端末では TestAd になる二重の保険)
+    if (USE_TEST_ADS) {
+      try {
+        await SDK().setRequestConfiguration({
+          testDeviceIdentifiers: ['EMULATOR'],
+        });
+      } catch {}
+    }
     await SDK().initialize();
     initialized = true;
     // バックグラウンドで最初の広告をプリロードしておく
