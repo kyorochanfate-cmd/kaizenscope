@@ -72,8 +72,8 @@ export default class ErrorBoundary extends Component<Props, State> {
           </TouchableOpacity>
 
           <Text style={styles.footer}>
-            問題が続く場合は、お問い合わせフォームからご連絡ください。{'\n'}
-            エラー情報は自動的に開発者に送信されています。
+            問題が続く場合は、設定画面のお問い合わせから{'\n'}
+            上記のエラー内容を添えてご連絡ください。
           </Text>
         </ScrollView>
       </View>
