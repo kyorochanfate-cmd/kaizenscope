@@ -16,7 +16,7 @@ import { getSession } from '../db/sessions';
 import { listTasks } from '../db/tasks';
 import { RootStackParamList } from '../navigation/types';
 import { colors, radii, shadows, spacing } from '../theme';
-import { maybeShowInterstitial } from '../utils/ads';
+import { awaitInterstitial } from '../utils/ads';
 import { exportXlsx } from '../utils/excel';
 import { exportPdf } from '../utils/pdf';
 import { captureException, trackEvent } from '../utils/telemetry';
@@ -28,9 +28,23 @@ export default function ChartsScreen({ navigation, route }: Props) {
   const [exporting, setExporting] = useState(false);
   const [exportingPdf, setExportingPdf] = useState(false);
 
+  // 「分析を見る」「レポートを出す」のような重い導線では
+  // タップ → 広告視聴 → 本処理 の順に進ませたいので、
+  // 各ハンドラ冒頭で awaitInterstitial() を await する。
+  const onGoToGantt = async () => {
+    await awaitInterstitial();
+    navigation.navigate('Gantt', { sessionId });
+  };
+
+  const onGoToYamazumi = async () => {
+    await awaitInterstitial();
+    navigation.navigate('Yamazumi', { sessionId });
+  };
+
   const onExportExcel = async () => {
     setExporting(true);
     try {
+      await awaitInterstitial();
       const [s, rs, ts] = await Promise.all([
         getSession(sessionId),
         listResources(sessionId),
@@ -42,8 +56,6 @@ export default function ChartsScreen({ navigation, route }: Props) {
       }
       await exportXlsx(s, rs, ts);
       trackEvent('xlsx_exported', { taskCount: ts.length, resourceCount: rs.length });
-      // 出力直後はユーザーが待っていた瞬間なのでインター挿入の好機
-      maybeShowInterstitial();
     } catch (e: any) {
       Alert.alert('出力失敗', String(e?.message ?? e));
       captureException(e, { context: 'exportXlsx' });
@@ -55,6 +67,7 @@ export default function ChartsScreen({ navigation, route }: Props) {
   const onExportPdf = async () => {
     setExportingPdf(true);
     try {
+      await awaitInterstitial();
       const [s, rs, ts] = await Promise.all([
         getSession(sessionId),
         listResources(sessionId),
@@ -66,7 +79,6 @@ export default function ChartsScreen({ navigation, route }: Props) {
       }
       await exportPdf(s, rs, ts);
       trackEvent('pdf_exported', { taskCount: ts.length, resourceCount: rs.length });
-      maybeShowInterstitial();
     } catch (e: any) {
       Alert.alert('PDF 出力失敗', String(e?.message ?? e));
       captureException(e, { context: 'exportPdf' });
@@ -90,7 +102,7 @@ export default function ChartsScreen({ navigation, route }: Props) {
           tag="1リソース＝1行・横軸時間"
           desc="全リソースを並列で見て、誰がいつ動いていたか・止まっていたかを比較する"
           hint="多リソースのタイミング比較"
-          onPress={() => navigation.navigate('Gantt', { sessionId })}
+          onPress={onGoToGantt}
         />
 
         <View style={{ height: spacing.md }} />
@@ -102,7 +114,7 @@ export default function ChartsScreen({ navigation, route }: Props) {
           tag="1リソース＝1本の縦棒"
           desc="各リソースの合計時間と内訳をタクトと比較。負荷の偏り・タクト達成を一目で"
           hint="負荷の平準化・タクト達成率"
-          onPress={() => navigation.navigate('Yamazumi', { sessionId })}
+          onPress={onGoToYamazumi}
         />
 
         <View style={styles.divider}>

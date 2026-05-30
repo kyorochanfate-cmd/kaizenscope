@@ -126,26 +126,78 @@ function preloadInterstitial(): void {
 }
 
 /**
- * 条件を満たすとインタースティシャル広告を表示する。
- * - ad-free 期間中は何もしない
- * - 直近 MIN_INTER_GAP_MS 以内に既に表示済みなら何もしない
- * - 広告がまだロードされていなければ何もしない
- *
+ * インタースティシャル広告を表示してよい条件か判定する。
+ * - ad-free 期間中: NG
+ * - 直近 MIN_INTER_GAP_MS 以内に表示済み: NG
+ * - 広告がまだロードされていない: NG
+ */
+async function canShowInterstitial(): Promise<boolean> {
+  if (!interstitial || !interstitialReady) return false;
+  const now = Date.now();
+  if (now < (await getAdFreeUntil())) return false;
+  if (now - (await getLastInterstitialAt()) < MIN_INTER_GAP_MS) return false;
+  return true;
+}
+
+/**
+ * 条件を満たすとインタースティシャル広告を表示する (fire-and-forget)。
+ * セッション作成完了など、後続処理を待たせたくない場面で使う。
  * Expo Go では常に no-op。
  */
 export async function maybeShowInterstitial(): Promise<void> {
-  if (!interstitial || !interstitialReady) return;
   try {
-    const now = Date.now();
-    const adFreeUntil = await getAdFreeUntil();
-    if (now < adFreeUntil) return;
-    const lastAt = await getLastInterstitialAt();
-    if (now - lastAt < MIN_INTER_GAP_MS) return;
-    await interstitial.show();
+    if (!(await canShowInterstitial())) return;
     await markInterstitialShown();
+    await interstitial.show();
   } catch (e) {
     captureException(e, { context: 'maybeShowInterstitial' });
   }
+}
+
+/**
+ * インタースティシャル広告を表示し、ユーザーが閉じる (または表示できない)
+ * まで Promise を保留する。タップ → 広告 → 目的の操作の順で進めたい
+ * 「分析を選ぶ・レポート出力する」などの導線で使う。
+ *
+ * - 表示条件を満たさない場合は即 resolve (ユーザーをブロックしない)
+ * - イベントが詰まったときの保険として 90 秒で打ち切り
+ *
+ * Expo Go では常に即 resolve。
+ */
+export async function awaitInterstitial(): Promise<void> {
+  if (!(await canShowInterstitial())) return;
+  await markInterstitialShown();
+  return new Promise<void>((resolve) => {
+    let done = false;
+    let unsubscribe: (() => void) | null = null;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    const finish = (): void => {
+      if (done) return;
+      done = true;
+      if (unsubscribe) {
+        try {
+          unsubscribe();
+        } catch {}
+      }
+      if (timer) clearTimeout(timer);
+      resolve();
+    };
+    try {
+      unsubscribe = interstitial.addAdEventListener(
+        AdEventTypeEnum.CLOSED,
+        finish
+      );
+      // イベントが失われた場合の保険
+      timer = setTimeout(finish, 90_000);
+      const showResult = interstitial.show();
+      if (showResult && typeof showResult.catch === 'function') {
+        showResult.catch(finish);
+      }
+    } catch (e) {
+      captureException(e, { context: 'awaitInterstitial' });
+      finish();
+    }
+  });
 }
 
 // ─── リワード ─────────────────────────────────────────
