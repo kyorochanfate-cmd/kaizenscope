@@ -1,8 +1,7 @@
 import * as Clipboard from 'expo-clipboard';
 import Constants from 'expo-constants';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
-  ActivityIndicator,
   Alert,
   Linking,
   Modal,
@@ -14,12 +13,7 @@ import {
   View,
 } from 'react-native';
 import { colors, radii, shadows, spacing } from '../theme';
-import {
-  forceShowInterstitial,
-  getAdFreeStatus,
-  getAdsDiagnostics,
-  watchRewardedForAdFree,
-} from '../utils/ads';
+import { forceShowInterstitial, getAdsDiagnostics } from '../utils/ads';
 import { seedDemoIntoLatestSession } from '../utils/seed';
 import { wipeAllUserData } from '../utils/wipe';
 
@@ -37,54 +31,10 @@ const FEEDBACK_FORM_URL = 'https://forms.gle/r6kNS5zAaZmb2V9Z7';
 export default function AppInfoModal({ visible, onClose, onDataWiped }: Props) {
   const [wiping, setWiping] = useState(false);
   const [seeding, setSeeding] = useState(false);
-  const [watchingRewarded, setWatchingRewarded] = useState(false);
-  const [adFreeRemainingMin, setAdFreeRemainingMin] = useState(0);
 
   const appName = (Constants.expoConfig?.name as string) ?? 'カイゼンスコープ';
   const version = (Constants.expoConfig?.version as string) ?? '1.0.0';
   const sdkVersion = (Constants.expoConfig?.sdkVersion as string) ?? '54.0.0';
-
-  // モーダル表示時に ad-free 残り時間を再計算
-  useEffect(() => {
-    if (!visible) return;
-    let cancelled = false;
-    (async () => {
-      const s = await getAdFreeStatus();
-      if (!cancelled) setAdFreeRemainingMin(s.remainingMinutes);
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [visible]);
-
-  const onWatchRewarded = async () => {
-    setWatchingRewarded(true);
-    try {
-      const r = await watchRewardedForAdFree();
-      if (r.ok) {
-        const s = await getAdFreeStatus();
-        setAdFreeRemainingMin(s.remainingMinutes);
-        Alert.alert(
-          '✅ 広告を 15 分 非表示にしました',
-          'ご視聴ありがとうございました。'
-        );
-      } else if (r.reason === 'sdk_unavailable') {
-        Alert.alert(
-          '広告が利用できません',
-          'Expo Go では広告の表示はサポートされていません。EAS でビルドしたアプリでお試しください。'
-        );
-      } else if (r.reason === 'closed_without_reward') {
-        Alert.alert('途中で閉じられました', '最後まで視聴すると報酬が付与されます。');
-      } else {
-        Alert.alert(
-          '広告を読み込めませんでした',
-          '通信状況をご確認の上、しばらく経ってから再度お試しください。'
-        );
-      }
-    } finally {
-      setWatchingRewarded(false);
-    }
-  };
 
   const openPrivacy = () => {
     Linking.openURL(PRIVACY_POLICY_URL).catch(() =>
@@ -250,41 +200,6 @@ export default function AppInfoModal({ visible, onClose, onDataWiped }: Props) {
               />
             </Section>
 
-            <Section heading="🎬 広告を 15 分 非表示にする">
-              {adFreeRemainingMin > 0 ? (
-                <View style={styles.adFreeActive}>
-                  <Text style={styles.adFreeActiveLabel}>
-                    ✓ 現在広告非表示中
-                  </Text>
-                  <Text style={styles.adFreeActiveSub}>
-                    残り 約 {adFreeRemainingMin} 分
-                  </Text>
-                </View>
-              ) : (
-                <>
-                  <Text style={styles.dangerHint}>
-                    短い動画広告を 1 本ご視聴いただくと、
-                    向こう 15 分アプリ内のインタースティシャル広告を停止します。
-                    開発を応援いただける場合にどうぞ。
-                  </Text>
-                  <TouchableOpacity
-                    style={styles.rewardBtn}
-                    onPress={onWatchRewarded}
-                    disabled={watchingRewarded}
-                    activeOpacity={0.85}
-                  >
-                    {watchingRewarded ? (
-                      <ActivityIndicator color="#fff" />
-                    ) : (
-                      <Text style={styles.rewardBtnText}>
-                        ▶ 広告を見て 15 分非表示にする
-                      </Text>
-                    )}
-                  </TouchableOpacity>
-                </>
-              )}
-            </Section>
-
             {/* スクショ撮影用の開発者ツール。本番ビルドでは非表示。 */}
             {__DEV__ && (
               <Section heading="📸 ストア撮影用 (開発者向け)">
@@ -305,10 +220,12 @@ export default function AppInfoModal({ visible, onClose, onDataWiped }: Props) {
               </Section>
             )}
 
-            {/* 広告診断 (preview/dev でのみ表示) */}
-            <Section heading="🩺 広告 SDK 診断">
-              <AdDiagnostics />
-            </Section>
+            {/* 広告診断は開発者向け。本番ビルドでは非表示 */}
+            {__DEV__ && (
+              <Section heading="🩺 広告 SDK 診断">
+                <AdDiagnostics />
+              </Section>
+            )}
 
             <Section heading="🗑 データ管理">
               <Text style={styles.dangerHint}>
