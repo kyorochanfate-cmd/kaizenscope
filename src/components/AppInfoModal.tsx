@@ -65,7 +65,7 @@ export default function AppInfoModal({ visible, onClose, onDataWiped }: Props) {
         const s = await getAdFreeStatus();
         setAdFreeRemainingMin(s.remainingMinutes);
         Alert.alert(
-          '✅ 広告を 1 時間 非表示にしました',
+          '✅ 広告を 15 分 非表示にしました',
           'ご視聴ありがとうございました。'
         );
       } else if (r.reason === 'sdk_unavailable') {
@@ -250,7 +250,7 @@ export default function AppInfoModal({ visible, onClose, onDataWiped }: Props) {
               />
             </Section>
 
-            <Section heading="🎬 広告を 1 時間 非表示にする">
+            <Section heading="🎬 広告を 15 分 非表示にする">
               {adFreeRemainingMin > 0 ? (
                 <View style={styles.adFreeActive}>
                   <Text style={styles.adFreeActiveLabel}>
@@ -264,7 +264,7 @@ export default function AppInfoModal({ visible, onClose, onDataWiped }: Props) {
                 <>
                   <Text style={styles.dangerHint}>
                     短い動画広告を 1 本ご視聴いただくと、
-                    向こう 1 時間アプリ内のインタースティシャル広告を停止します。
+                    向こう 15 分アプリ内のインタースティシャル広告を停止します。
                     開発を応援いただける場合にどうぞ。
                   </Text>
                   <TouchableOpacity
@@ -277,7 +277,7 @@ export default function AppInfoModal({ visible, onClose, onDataWiped }: Props) {
                       <ActivityIndicator color="#fff" />
                     ) : (
                       <Text style={styles.rewardBtnText}>
-                        ▶ 広告を見て 1 時間非表示にする
+                        ▶ 広告を見て 15 分非表示にする
                       </Text>
                     )}
                   </TouchableOpacity>
