@@ -257,22 +257,25 @@ export default function AppInfoModal({ visible, onClose, onDataWiped }: Props) {
               )}
             </Section>
 
-            <Section heading="📸 ストア撮影用 (開発者向け)">
-              <Text style={styles.dangerHint}>
-                スクリーンショット用に、空のセッションへリアルなサンプル要素作業を一括投入します。
-                {'\n'}事前に動画 1 本でセッションを作っておいてください。
-              </Text>
-              <TouchableOpacity
-                style={styles.seedBtn}
-                onPress={onSeed}
-                disabled={seeding}
-                activeOpacity={0.85}
-              >
-                <Text style={styles.seedBtnText}>
-                  {seeding ? '投入中...' : '🌱 デモデータを投入'}
+            {/* スクショ撮影用の開発者ツール。本番ビルドでは非表示。 */}
+            {__DEV__ && (
+              <Section heading="📸 ストア撮影用 (開発者向け)">
+                <Text style={styles.dangerHint}>
+                  スクリーンショット用に、空のセッションへリアルなサンプル要素作業を一括投入します。
+                  {'\n'}事前に動画 1 本でセッションを作っておいてください。
                 </Text>
-              </TouchableOpacity>
-            </Section>
+                <TouchableOpacity
+                  style={styles.seedBtn}
+                  onPress={onSeed}
+                  disabled={seeding}
+                  activeOpacity={0.85}
+                >
+                  <Text style={styles.seedBtnText}>
+                    {seeding ? '投入中...' : '🌱 デモデータを投入'}
+                  </Text>
+                </TouchableOpacity>
+              </Section>
+            )}
 
             <Section heading="🗑 データ管理">
               <Text style={styles.dangerHint}>
