@@ -8,6 +8,7 @@ import ErrorBoundary from './src/components/ErrorBoundary';
 import { initDatabase } from './src/db/database';
 import { RootStackParamList } from './src/navigation/types';
 import { colors } from './src/theme';
+import { initAds } from './src/utils/ads';
 import { hasSeenOnboarding } from './src/utils/appState';
 import { captureException, initTelemetry } from './src/utils/telemetry';
 import AnalysisScreen from './src/screens/AnalysisScreen';
@@ -28,6 +29,8 @@ export default function App() {
 
   useEffect(() => {
     initTelemetry();
+    // AdMob 初期化はバックグラウンドで走らせて DB 初期化と並列化
+    initAds();
     initDatabase()
       .then(async () => {
         // DB 初期化後にオンボーディング閲覧フラグを読む

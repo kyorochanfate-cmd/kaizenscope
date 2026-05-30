@@ -10,13 +10,13 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import BannerAdSlot from '../components/BannerAdSlot';
 import SessionTabBar, { TAB_BAR_HEIGHT } from '../components/SessionTabBar';
 import { listResources } from '../db/resources';
 import { getSession } from '../db/sessions';
 import { listTasks } from '../db/tasks';
 import { RootStackParamList } from '../navigation/types';
 import { colors, radii, shadows, spacing } from '../theme';
+import { maybeShowInterstitial } from '../utils/ads';
 import { exportXlsx } from '../utils/excel';
 import { exportPdf } from '../utils/pdf';
 import { captureException, trackEvent } from '../utils/telemetry';
@@ -42,6 +42,8 @@ export default function ChartsScreen({ navigation, route }: Props) {
       }
       await exportXlsx(s, rs, ts);
       trackEvent('xlsx_exported', { taskCount: ts.length, resourceCount: rs.length });
+      // 出力直後はユーザーが待っていた瞬間なのでインター挿入の好機
+      maybeShowInterstitial();
     } catch (e: any) {
       Alert.alert('出力失敗', String(e?.message ?? e));
       captureException(e, { context: 'exportXlsx' });
@@ -64,6 +66,7 @@ export default function ChartsScreen({ navigation, route }: Props) {
       }
       await exportPdf(s, rs, ts);
       trackEvent('pdf_exported', { taskCount: ts.length, resourceCount: rs.length });
+      maybeShowInterstitial();
     } catch (e: any) {
       Alert.alert('PDF 出力失敗', String(e?.message ?? e));
       captureException(e, { context: 'exportPdf' });
@@ -74,7 +77,6 @@ export default function ChartsScreen({ navigation, route }: Props) {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
-      <BannerAdSlot />
       <ScrollView
         style={styles.container}
         contentContainerStyle={{ padding: spacing.lg, paddingBottom: TAB_BAR_HEIGHT + 16 }}

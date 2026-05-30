@@ -3,7 +3,6 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useCallback, useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import BannerAdSlot from '../components/BannerAdSlot';
 import SessionTabBar, { TAB_BAR_HEIGHT } from '../components/SessionTabBar';
 import { listResources } from '../db/resources';
 import { getSession } from '../db/sessions';
@@ -166,7 +165,6 @@ export default function ImprovementsScreen({ route }: Props) {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
-      <BannerAdSlot />
       <ScrollView
         style={styles.container}
         contentContainerStyle={{ padding: 16, paddingBottom: bottomReserve }}

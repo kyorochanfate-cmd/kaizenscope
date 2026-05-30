@@ -11,7 +11,6 @@ import {
   View,
 } from 'react-native';
 import AppInfoModal from '../components/AppInfoModal';
-import BannerAdSlot from '../components/BannerAdSlot';
 import { deleteSession, listSessions } from '../db/sessions';
 import { RootStackParamList } from '../navigation/types';
 import { colors, gradients, radii, shadows, spacing, typography } from '../theme';
@@ -68,7 +67,6 @@ export default function SessionListScreen({ navigation }: Props) {
 
   return (
     <View style={styles.container}>
-      <BannerAdSlot />
       <FlatList
         data={sessions}
         keyExtractor={(s) => s.id}

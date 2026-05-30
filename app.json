@@ -50,6 +50,13 @@
           "cameraPermission": "作業動画の撮影のためにカメラへのアクセスを許可してください",
           "microphonePermission": "作業動画の録音のためにマイクへのアクセスを許可してください"
         }
+      ],
+      [
+        "react-native-google-mobile-ads",
+        {
+          "androidAppId": "ca-app-pub-7673631103665099~3168305577",
+          "userTrackingPermission": "広告のパーソナライズに使用します"
+        }
       ]
     ],
     "extra": {

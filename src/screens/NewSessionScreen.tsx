@@ -18,6 +18,7 @@ import { createSession } from '../db/sessions';
 import { RootStackParamList } from '../navigation/types';
 import { colors, gradients, radii, shadows, spacing } from '../theme';
 import { AnalysisMode } from '../types';
+import { maybeShowInterstitial } from '../utils/ads';
 import { formatDuration } from '../utils/time';
 import { captureException, trackEvent } from '../utils/telemetry';
 import { persistVideo } from '../utils/videoStorage';
@@ -238,6 +239,9 @@ export default function NewSessionScreen({ navigation }: Props) {
         peopleCount: cleanPeople.length,
         machineCount: cleanMachines.length,
       });
+      // セッション作成完了は自然な区切り点なのでインター挿入
+      // (頻度キャップ・ad-free 期間は ads 側で吸収)
+      maybeShowInterstitial();
       navigation.replace('Analysis', { sessionId: session.id });
     } catch (e: any) {
       Alert.alert('エラー', String(e?.message ?? e));
