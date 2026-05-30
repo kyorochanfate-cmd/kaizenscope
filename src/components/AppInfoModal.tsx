@@ -1,3 +1,4 @@
+import * as Clipboard from 'expo-clipboard';
 import Constants from 'expo-constants';
 import { useEffect, useState } from 'react';
 import {
@@ -31,7 +32,7 @@ interface Props {
 
 const PRIVACY_POLICY_URL =
   'https://kyorochanfate-cmd.github.io/kaizenscope/privacy.html';
-const SUPPORT_EMAIL = 'kyorochan.fate@gmail.com';
+const FEEDBACK_FORM_URL = 'https://forms.gle/r6kNS5zAaZmb2V9Z7';
 
 export default function AppInfoModal({ visible, onClose, onDataWiped }: Props) {
   const [wiping, setWiping] = useState(false);
@@ -91,14 +92,31 @@ export default function AppInfoModal({ visible, onClose, onDataWiped }: Props) {
     );
   };
 
-  const openMail = () => {
-    const subject = encodeURIComponent(`【${appName}】お問い合わせ`);
-    const body = encodeURIComponent(
-      `\n\n---\nApp: ${appName} ${version}\nPlatform: ${Platform.OS} ${Platform.Version}\n`
+  const openFeedbackForm = () => {
+    Linking.openURL(FEEDBACK_FORM_URL).catch(() =>
+      Alert.alert(
+        '開けませんでした',
+        'ご意見フォームの URL を開けませんでした。ブラウザの状態をご確認ください。'
+      )
     );
-    Linking.openURL(`mailto:${SUPPORT_EMAIL}?subject=${subject}&body=${body}`).catch(() =>
-      Alert.alert('開けませんでした', 'メールアプリを開けませんでした')
-    );
+  };
+
+  const copyDeviceInfo = async () => {
+    const info = [
+      `App: ${appName} v${version}`,
+      `Platform: ${Platform.OS} ${Platform.Version}`,
+      `Expo SDK: ${sdkVersion}`,
+      `Time: ${new Date().toISOString()}`,
+    ].join('\n');
+    try {
+      await Clipboard.setStringAsync(info);
+      Alert.alert(
+        '✅ コピーしました',
+        'ご意見フォームの「内容」欄に貼り付けてください。'
+      );
+    } catch {
+      Alert.alert('コピー失敗', 'クリップボードに保存できませんでした');
+    }
   };
 
   const onWipe = () => {
@@ -219,11 +237,16 @@ export default function AppInfoModal({ visible, onClose, onDataWiped }: Props) {
               <Row label="プライバシーポリシー" onPress={openPrivacy} />
             </Section>
 
-            <Section heading="✉ サポート">
+            <Section heading="💬 ご意見・改善要望">
               <Row
-                label="お問い合わせ (メール)"
-                onPress={openMail}
-                hint={SUPPORT_EMAIL}
+                label="ご意見フォームを開く"
+                onPress={openFeedbackForm}
+                hint="Google フォーム ・ 個別返信はいたしません"
+              />
+              <Row
+                label="📋 端末・アプリ情報をコピー"
+                onPress={copyDeviceInfo}
+                hint="バグ報告時にフォームへ貼り付け用"
               />
             </Section>
 

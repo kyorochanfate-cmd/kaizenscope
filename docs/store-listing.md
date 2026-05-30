@@ -118,8 +118,9 @@
 
 ## 開発者連絡先 (Play Console プロフィール用)
 
-- メール: kyorochan.fate@gmail.com
+- メール: kyorochan.fate@gmail.com (Play Console 必須・一般公開項目)
 - 国: 日本
+- 通常のお問い合わせ動線: https://forms.gle/r6kNS5zAaZmb2V9Z7 (アプリ内 ⓘ から開く)
 
 ## プライバシーポリシー URL
 

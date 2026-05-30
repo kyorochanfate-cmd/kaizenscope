@@ -44,9 +44,14 @@ Play Console → **すべてのアプリ** → **アプリを作成**
 |---|---|
 | アプリのカテゴリ | **ビジネス** |
 | タグ | 効率化 / 仕事 |
-| 連絡先メール | `kyorochan.fate@gmail.com` |
+| 連絡先メール | `kyorochan.fate@gmail.com` (Play Console 必須項目。一般公開はされるが、アプリ内では非露出) |
 | ウェブサイト (任意) | `https://kyorochanfate-cmd.github.io/kaizenscope/` |
 | 電話番号 (任意) | 空欄でOK |
+
+> 💡 アプリ内のお問い合わせ動線は Google フォーム
+> (`https://forms.gle/r6kNS5zAaZmb2V9Z7`) に集約しています。
+> 「連絡先メール」は Play Console が公開する必須項目で削除不可ですが、
+> 普段の問い合わせはフォーム経由になるためメールに大量に届くことはありません。
 
 ### プライバシー ポリシー
 
