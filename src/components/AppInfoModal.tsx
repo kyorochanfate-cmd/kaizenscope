@@ -13,7 +13,12 @@ import {
   View,
 } from 'react-native';
 import { colors, radii, shadows, spacing } from '../theme';
-import { getAdFreeStatus, watchRewardedForAdFree } from '../utils/ads';
+import {
+  forceShowInterstitial,
+  getAdFreeStatus,
+  getAdsDiagnostics,
+  watchRewardedForAdFree,
+} from '../utils/ads';
 import { seedDemoIntoLatestSession } from '../utils/seed';
 import { wipeAllUserData } from '../utils/wipe';
 
@@ -277,6 +282,11 @@ export default function AppInfoModal({ visible, onClose, onDataWiped }: Props) {
               </Section>
             )}
 
+            {/* 広告診断 (preview/dev でのみ表示) */}
+            <Section heading="🩺 広告 SDK 診断">
+              <AdDiagnostics />
+            </Section>
+
             <Section heading="🗑 データ管理">
               <Text style={styles.dangerHint}>
                 このアプリのデータは、すべて端末内のみに保存されています。
@@ -347,6 +357,73 @@ function Row({
       </View>
       <Text style={styles.rowArrow}>›</Text>
     </TouchableOpacity>
+  );
+}
+
+function AdDiagnostics() {
+  const [tick, setTick] = useState(0);
+  const [forcing, setForcing] = useState(false);
+  const diag = getAdsDiagnostics();
+
+  const onRefresh = () => setTick((t) => t + 1);
+
+  const onForce = async () => {
+    setForcing(true);
+    try {
+      const r = await forceShowInterstitial();
+      if (!r.shown) {
+        Alert.alert('広告を表示できませんでした', r.reason ?? '不明');
+      }
+      setTick((t) => t + 1);
+    } finally {
+      setForcing(false);
+    }
+  };
+
+  const ok = (b: boolean) => (b ? '✅' : '❌');
+
+  return (
+    <View style={{ padding: 12 }}>
+      <Text style={styles.diagLine}>
+        {ok(diag.sdkAvailable)} SDK 読み込み
+      </Text>
+      <Text style={styles.diagLine}>{ok(diag.initialized)} 初期化完了</Text>
+      <Text style={styles.diagLine}>
+        {ok(diag.interstitialReady)} インター広告ロード済み
+      </Text>
+      <Text style={styles.diagLine}>
+        {diag.useTestAds ? '🧪' : '🟢'} {diag.useTestAds ? 'テスト広告モード' : '本番広告モード'}
+      </Text>
+      {diag.initError && (
+        <Text style={styles.diagErr}>init: {diag.initError}</Text>
+      )}
+      {diag.preloadError && (
+        <Text style={styles.diagErr}>preload: {diag.preloadError}</Text>
+      )}
+
+      {/* 暗黙の useEffect 不要 — タップでも再評価できるよう小ボタン */}
+      <View style={{ flexDirection: 'row', gap: 8, marginTop: 10 }}>
+        <TouchableOpacity
+          style={styles.diagBtnSec}
+          onPress={onRefresh}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.diagBtnSecText}>🔄 状態更新</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.diagBtnPri}
+          onPress={onForce}
+          disabled={forcing}
+          activeOpacity={0.85}
+        >
+          <Text style={styles.diagBtnPriText}>
+            {forcing ? '表示中...' : '▶ 強制的に広告を表示'}
+          </Text>
+        </TouchableOpacity>
+      </View>
+      {/* tick を読んで再レンダーされるようにする */}
+      <View style={{ height: 0 }} key={tick} />
+    </View>
   );
 }
 
@@ -496,6 +573,44 @@ const styles = StyleSheet.create({
     color: '#065f46',
     marginTop: 2,
     fontVariant: ['tabular-nums'],
+  },
+  diagLine: {
+    fontSize: 12,
+    color: colors.text,
+    fontWeight: '700',
+    marginVertical: 2,
+  },
+  diagErr: {
+    fontSize: 11,
+    color: colors.danger700,
+    marginTop: 4,
+    fontFamily: 'monospace',
+  },
+  diagBtnSec: {
+    flex: 1,
+    backgroundColor: colors.surfaceMuted,
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingVertical: 10,
+    borderRadius: radii.sm,
+    alignItems: 'center',
+  },
+  diagBtnSecText: {
+    color: colors.textMuted,
+    fontWeight: '700',
+    fontSize: 12,
+  },
+  diagBtnPri: {
+    flex: 2,
+    backgroundColor: colors.primary700,
+    paddingVertical: 10,
+    borderRadius: radii.sm,
+    alignItems: 'center',
+  },
+  diagBtnPriText: {
+    color: '#fff',
+    fontWeight: '800',
+    fontSize: 12,
   },
   copyright: {
     fontSize: 10,

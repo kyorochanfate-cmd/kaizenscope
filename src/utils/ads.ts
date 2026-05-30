@@ -22,8 +22,12 @@ import { captureException } from './telemetry';
 const ANDROID_INTERSTITIAL_UNIT_ID = 'ca-app-pub-7673631103665099/8736327027';
 const ANDROID_REWARDED_UNIT_ID = 'ca-app-pub-7673631103665099/1537024086';
 
-/** インタースティシャルの最低間隔 (ms)。5 分。 */
-const MIN_INTER_GAP_MS = 5 * 60 * 1000;
+/**
+ * インタースティシャルの最低間隔 (ms)。90 秒。
+ * 「分析タブの各機能をタップ時に広告」UX を実現するため、
+ * 5 分から短縮。連打すると 1 本だけ流れる程度に抑える。
+ */
+const MIN_INTER_GAP_MS = 90 * 1000;
 /** リワード視聴で付与する ad-free 時間 (ms)。1 時間。 */
 const REWARD_AD_FREE_MS = 60 * 60 * 1000;
 
@@ -71,26 +75,52 @@ function rewardedUnitId(): string {
 }
 
 let initialized = false;
+let initError: string | null = null;
+let preloadError: string | null = null;
 
 export async function initAds(): Promise<void> {
-  if (initialized || !SDK) return;
+  if (initialized || !SDK) {
+    if (!SDK) initError = 'SDK module not loaded (Expo Go?)';
+    return;
+  }
   try {
-    // テスト広告モードのときは、実機を強制的にテストデバイス扱いにする。
-    // (本番 ID を使う production でも、登録した端末では TestAd になる二重の保険)
+    // initialize 後に setRequestConfiguration を呼ぶ (順序を逆にするとエラーになる端末がある)
+    await SDK().initialize();
+    initialized = true;
     if (USE_TEST_ADS) {
       try {
         await SDK().setRequestConfiguration({
           testDeviceIdentifiers: ['EMULATOR'],
         });
-      } catch {}
+      } catch {
+        /* 一部端末で未対応。テスト ID 自体は使われるのでそのまま続行 */
+      }
     }
-    await SDK().initialize();
-    initialized = true;
     // バックグラウンドで最初の広告をプリロードしておく
     preloadInterstitial();
-  } catch (e) {
+  } catch (e: any) {
+    initError = e?.message ?? String(e);
     captureException(e, { context: 'initAds' });
   }
+}
+
+/** 診断用: 現在の広告 SDK 状態を返す */
+export function getAdsDiagnostics(): {
+  sdkAvailable: boolean;
+  initialized: boolean;
+  interstitialReady: boolean;
+  initError: string | null;
+  preloadError: string | null;
+  useTestAds: boolean;
+} {
+  return {
+    sdkAvailable: !!SDK,
+    initialized,
+    interstitialReady,
+    initError,
+    preloadError,
+    useTestAds: USE_TEST_ADS,
+  };
 }
 
 // ─── インタースティシャル ───────────────────────────────
@@ -99,15 +129,22 @@ let interstitial: any = null;
 let interstitialReady = false;
 
 function preloadInterstitial(): void {
-  if (!InterstitialAdCls || !AdEventTypeEnum) return;
+  if (!InterstitialAdCls || !AdEventTypeEnum) {
+    preloadError = 'InterstitialAd class not available';
+    return;
+  }
   try {
     const unit = interstitialUnitId();
-    if (!unit) return;
+    if (!unit) {
+      preloadError = 'No ad unit id';
+      return;
+    }
     interstitial = InterstitialAdCls.createForAdRequest(unit, {
       requestNonPersonalizedAdsOnly: true,
     });
     interstitial.addAdEventListener(AdEventTypeEnum.LOADED, () => {
       interstitialReady = true;
+      preloadError = null;
     });
     interstitial.addAdEventListener(AdEventTypeEnum.CLOSED, () => {
       interstitialReady = false;
@@ -116,12 +153,38 @@ function preloadInterstitial(): void {
         interstitial.load();
       } catch {}
     });
-    interstitial.addAdEventListener(AdEventTypeEnum.ERROR, () => {
+    interstitial.addAdEventListener(AdEventTypeEnum.ERROR, (e: any) => {
       interstitialReady = false;
+      preloadError = `Ad load error: ${e?.message ?? 'unknown'}`;
     });
     interstitial.load();
-  } catch (e) {
+  } catch (e: any) {
+    preloadError = e?.message ?? String(e);
     captureException(e, { context: 'preloadInterstitial' });
+  }
+}
+
+/**
+ * 開発・診断用: 頻度キャップを無視してインタースティシャルを強制表示。
+ * Expo Go や SDK 未ロード状態では表示不可の理由を返す。
+ */
+export async function forceShowInterstitial(): Promise<{ shown: boolean; reason?: string }> {
+  if (!SDK) return { shown: false, reason: 'SDK 未ロード (Expo Go かビルド失敗)' };
+  if (!initialized) return { shown: false, reason: 'AdMob 未初期化' };
+  if (!interstitial) return { shown: false, reason: 'interstitial インスタンス無し' };
+  if (!interstitialReady) {
+    // 改めてロードを試みる
+    try {
+      interstitial.load();
+    } catch {}
+    return { shown: false, reason: '広告未ロード(数秒待ってから再試行)' };
+  }
+  try {
+    await markInterstitialShown();
+    await interstitial.show();
+    return { shown: true };
+  } catch (e: any) {
+    return { shown: false, reason: `表示エラー: ${e?.message ?? String(e)}` };
   }
 }
 
